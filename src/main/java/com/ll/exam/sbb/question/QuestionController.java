@@ -1,5 +1,6 @@
 package com.ll.exam.sbb.question;
 
+import com.ll.exam.sbb.DataNotFoundException;
 import com.ll.exam.sbb.answer.AnswerForm;
 import com.ll.exam.sbb.user.SiteUser;
 import com.ll.exam.sbb.user.UserService;
@@ -55,6 +56,45 @@ public class QuestionController {
     }
 
     @PreAuthorize("isAuthenticated()")
+    @GetMapping("/modify/{id}")
+    public String questionModify(QuestionForm questionForm, @PathVariable("id") Integer id, Principal principal) {
+        Question question = this.questionService.getQuestion(id);
+
+        if (question == null) {
+            throw new DataNotFoundException("%d번 질문은 존재하지 않습니다.");
+        }
+
+        if (!question.getAuthor().getUsername().equals(principal.getName())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "수정권한이 없습니다.");
+        }
+
+        questionForm.setSubject(question.getSubject());
+        questionForm.setContent(question.getContent());
+
+        return "question_form";
+    }
+
+    @PostMapping("/modify/{id}")
+    public String questionModify(@Valid QuestionForm questionForm, BindingResult bindingResult,
+                                 Principal principal, @PathVariable("id") Integer id) {
+        if (bindingResult.hasErrors()) {
+            return "question_form";
+        }
+
+        Question question = this.questionService.getQuestion(id);
+
+        if (question == null) {
+            throw new DataNotFoundException("%d번 질문은 존재하지 않습니다.");
+        }
+
+        if (!question.getAuthor().getUsername().equals(principal.getName())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "수정권한이 없습니다.");
+        }
+        this.questionService.modify(question, questionForm.getSubject(), questionForm.getContent());
+        return String.format("redirect:/question/detail/%s", id);
+    }
+
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/create")
     public String questionCreate(QuestionForm questionForm) {
         return "question_form";
@@ -74,14 +114,20 @@ public class QuestionController {
     }
 
     @PreAuthorize("isAuthenticated()")
-    @GetMapping("/modify/{id}")
-    public String questionModify(QuestionForm questionForm, @PathVariable("id") Integer id, Principal principal) {
-        Question question = this.questionService.getQuestion(id);
-        if(!question.getAuthor().getUsername().equals(principal.getName())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "수정권한이 없습니다.");
+    @GetMapping("/delete/{id}")
+    public String questionDelete(Principal principal, @PathVariable("id") Integer id) {
+        Question question = questionService.getQuestion(id);
+
+        if (question == null) {
+            throw new DataNotFoundException("%d번 질문은 존재하지 않습니다.");
         }
-        questionForm.setSubject(question.getSubject());
-        questionForm.setContent(question.getContent());
-        return "question_form";
+
+        if (!question.getAuthor().getUsername().equals(principal.getName())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "삭제권한이 없습니다.");
+        }
+
+        questionService.delete(question);
+
+        return "redirect:/";
     }
 }
