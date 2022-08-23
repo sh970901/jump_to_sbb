@@ -6,7 +6,6 @@ import lombok.Setter;
 
 import javax.validation.constraints.NotEmpty;
 
-@AllArgsConstructor
 @Getter
 @Setter
 public class AnswerForm {
