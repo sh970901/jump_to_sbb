@@ -22,5 +22,5 @@ public interface QuestionRepository extends JpaRepository<Question, Long>, Repos
     @Query(value = "ALTER TABLE question AUTO_INCREMENT = 1", nativeQuery = true)
     void truncate(); // 이거 지우면 안됨, truncateTable 하면 자동으로 이게 실행됨
 
-    Page<Question> findBySubjectContainsOrContentContains(String kw, String kw_, Pageable pageable);
+    Page<Question> findBySubjectContainsOrContentContainsOrAuthor_usernameContains(String kw, String kw_, String kw__, Pageable pageable);
 }
