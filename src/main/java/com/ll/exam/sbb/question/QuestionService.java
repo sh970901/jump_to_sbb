@@ -28,7 +28,7 @@ public class QuestionService {
             return questionRepository.findAll(pageable);
         }
 
-        return questionRepository.findBySubjectContainsOrContentContainsOrAuthor_usernameContains(kw, kw, kw, pageable);
+        return questionRepository.findDistinctBySubjectContainsOrContentContainsOrAuthor_usernameContainsOrAnswerList_contentContainsOrAnswerList_author_username(kw, kw, kw, kw, kw, pageable);
     }
 
     public Question getQuestion(long id) {
@@ -62,3 +62,5 @@ public class QuestionService {
         questionRepository.save(question);
     }
 }
+
+
